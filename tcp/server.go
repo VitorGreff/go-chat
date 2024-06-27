@@ -9,7 +9,7 @@ import (
 func EchoServer(port string) {
 	server, err := net.Listen("tcp", port)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
 	defer server.Close()
 	fmt.Printf("Server running on port: %s", port)
@@ -17,7 +17,7 @@ func EchoServer(port string) {
 	for {
 		conn, err := server.Accept()
 		if err != nil {
-			fmt.Printf("Error accepting connection: %s", err)
+			fmt.Printf("Error accepting connection: %s\n", err)
 			continue
 		}
 
