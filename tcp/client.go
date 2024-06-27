@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func Client(port string) {
+func Client(port string, messageChannel chan Message) {
 	address := fmt.Sprintf("127.0.0.1%s", port)
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -15,40 +15,25 @@ func Client(port string) {
 	}
 	defer conn.Close()
 
+	go readUserInput(messageChannel)
+	for message := range messageChannel {
+		fmt.Printf("%s: %s> %s: %s\n", message.Source, message.Content, message.Source, message.Content)
+	}
+}
+
+func readUserInput(messageChannel chan Message) {
 	var name string
 	fmt.Print("Name: ")
 	fmt.Scanln(&name)
 
+	reader := bufio.NewReader(os.Stdin)
 	for {
-		var message string
-		fmt.Print("\n> ")
-
-		reader := bufio.NewReader(os.Stdin)
-		message, err := reader.ReadString('\n')
+		fmt.Print("> ")
+		messageContent, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error readling input")
+			fmt.Println("Error reading input")
 			continue
 		}
-		sendMessage(conn, name, message)
+		messageChannel <- Message{Source: name, Content: messageContent}
 	}
-}
-
-func sendMessage(conn net.Conn, name string, message string) {
-	_, err := conn.Write([]byte(message))
-	if err != nil {
-		fmt.Printf("Error sending data to server: %s\n", err)
-		return
-	}
-
-	// allocate 1 gigabyte of memory to store the data
-	data := make([]byte, 1024)
-	// n -> number of bytes read (offset)
-	n, err := conn.Read(data)
-	if err != nil {
-		fmt.Printf("Error receiving data from server: %s", err)
-		return
-	}
-
-	// both values carry '\n' at the end
-	fmt.Printf("> %s: %s> %s: %s", name, message, name, data[:n])
 }
