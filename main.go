@@ -6,10 +6,7 @@ import (
 	"chat/tcp"
 )
 
-var (
-	ADDRESS_PORT    = ":8080"
-	MESSAGE_CHANNEL = make(chan tcp.Message)
-)
+var ADDRESS_PORT = ":8080"
 
 func main() {
 	server := flag.Bool("s", false, "start server")
@@ -18,6 +15,6 @@ func main() {
 	if *server {
 		tcp.EchoServer(ADDRESS_PORT)
 	} else {
-		tcp.Client(ADDRESS_PORT, MESSAGE_CHANNEL)
+		tcp.Client(ADDRESS_PORT)
 	}
 }
